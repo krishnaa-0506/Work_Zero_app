@@ -3,7 +3,7 @@ import { mockJobs, mockUserProfile, mockApplications, mockConversations, mockVer
 
 // Use environment variable for API URL or fallback to development
 const API_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD ? 'https://workzeroapp-backend.netlify.app/api' : 'http://localhost:5001/api');
+  (import.meta.env.PROD ? 'https://workzeroapp-backend.vercel.app/api' : 'http://localhost:5001/api');
 
 const api = axios.create({
   baseURL: API_URL,

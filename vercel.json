@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "name": "workzeroapp",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://workzeroapp-backend.vercel.app/api",
+    "VITE_ENABLE_MOCK_FALLBACK": "true",
+    "VITE_APP_NAME": "WorkZero App"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://workzeroapp-backend.vercel.app/api",
+      "VITE_ENABLE_MOCK_FALLBACK": "true"
+    }
+  }
+}

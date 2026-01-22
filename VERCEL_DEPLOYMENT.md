@@ -1,7 +1,7 @@
-# WorkZero App - Netlify Deployment Guide 🚀
+# WorkZero App - Vercel Deployment Guide 🚀
 
 ## Overview
-WorkZero App is now configured for **Netlify deployment** with:
+WorkZero App is now configured for **Vercel deployment** with:
 - ✅ **Emoji support** throughout the UI 
 - 🎤 **Text-to-Speech (TTS)** for accessibility
 - 🔄 **Mock data fallback** when API calls fail
@@ -25,14 +25,14 @@ WorkZero App is now configured for **Netlify deployment** with:
 - **Graceful degradation**: App works offline with sample data
 - **Error handling**: Transparent fallback without user disruption
 
-### 🌐 Netlify Configuration
+### 🌐 Vercel Configuration
 - **Environment variables**: Properly configured for production
 - **CORS setup**: Multi-origin support for different environments
-- **Build optimization**: Optimized for fast Netlify deployments
+- **Build optimization**: Optimized for fast Vercel deployments
 
 ## Deployment Instructions
 
-### 1. Frontend Deployment (Netlify)
+### 1. Frontend Deployment (Vercel)
 
 ```bash
 # 1. Build the project
@@ -40,19 +40,21 @@ cd Work_Zero_app
 npm install
 npm run build
 
-# 2. Deploy to Netlify
-# Upload the 'dist' folder to Netlify or connect your GitHub repo
+# 2. Deploy to Vercel
+npx vercel --prod
+# or connect your GitHub repo at vercel.com
 ```
 
-**Netlify Environment Variables to Set:**
+**Vercel Environment Variables to Set:**
 ```
-VITE_API_URL=https://workzeroapp-backend.netlify.app/api
+VITE_API_URL=https://workzeroapp-backend.vercel.app/api
 VITE_ENABLE_MOCK_FALLBACK=true
+VITE_APP_NAME=WorkZero App
 ```
 
 ### 2. Backend Deployment (Optional)
 
-For the server to work with Netlify, you'll need to:
+For the server to work with Vercel, you'll need to:
 
 ```bash
 # 1. Install server dependencies
@@ -63,14 +65,14 @@ npm install
 MONGODB_URI=mongodb+srv://harihk0506:anbu@cluster0.yzukbbs.mongodb.net/employ_assist
 JWT_SECRET=employ_assist_secret_key_2025
 PORT=5000
-CORS_ORIGIN=https://workzeroapp.netlify.app
+CORS_ORIGIN=https://workzeroapp.vercel.app
 ```
 
 ### 3. Domain Configuration
 
-Update the following URLs in your Netlify settings:
-- **Site URL**: `https://workzeroapp.netlify.app`
-- **Custom Domain** (if applicable): `www.workzeroapp.netlify.app`
+Update the following URLs in your Vercel settings:
+- **Site URL**: `https://workzeroapp.vercel.app`
+- **Custom Domain** (if applicable): `www.workzeroapp.vercel.app`
 
 ## TTS Usage
 
