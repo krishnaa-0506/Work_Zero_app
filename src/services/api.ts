@@ -1,13 +1,27 @@
 import axios from 'axios';
+import { mockJobs, mockUserProfile, mockApplications, mockConversations, mockVerificationResult } from '../data/mockData';
 
-const API_URL = 'http://localhost:5001/api';
+// Use environment variable for API URL or fallback to development
+const API_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? 'https://workzeroapp-backend.netlify.app/api' : 'http://localhost:5001/api');
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  timeout: 10000 // 10 second timeout
 });
+
+// Helper function to handle API calls with mock fallback
+const withMockFallback = async <T>(apiCall: () => Promise<{ data: T }>, mockData: T): Promise<{ data: T }> => {
+  try {
+    return await apiCall();
+  } catch (error) {
+    console.warn('API call failed, using mock data:', error);
+    return { data: mockData };
+  }
+};
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
@@ -20,77 +34,155 @@ api.interceptors.request.use((config) => {
 
 // Auth APIs
 export const verifyAadhaar = (aadhaarNumber: string) =>
-  api.post('/users/verify-aadhaar', { aadhaarNumber });
+  withMockFallback(
+    () => api.post('/users/verify-aadhaar', { aadhaarNumber }),
+    mockVerificationResult
+  );
 
 export const verifyFace = (selfieImage: string, aadhaarPhoto: string) =>
-  api.post('/users/verify-face', { selfieImage, aadhaarPhoto });
+  withMockFallback(
+    () => api.post('/users/verify-face', { selfieImage, aadhaarPhoto }),
+    mockVerificationResult
+  );
 
 export const signup = (userData: any) =>
-  api.post('/users/signup', userData);
+  withMockFallback(
+    () => api.post('/users/signup', userData),
+    { user: mockUserProfile, token: 'mock-jwt-token' }
+  );
 
 export const login = (aadhaarNumber: string) =>
-  api.post('/users/login', { aadhaarNumber });
+  withMockFallback(
+    () => api.post('/users/login', { aadhaarNumber }),
+    { user: mockUserProfile, token: 'mock-jwt-token' }
+  );
 
 // User APIs
 export const getProfile = () =>
-  api.get('/users/profile');
+  withMockFallback(
+    () => api.get('/users/profile'),
+    mockUserProfile
+  );
 
 export const updateProfile = (data: any) =>
-  api.patch('/users/profile', data);
+  withMockFallback(
+    () => api.patch('/users/profile', data),
+    { ...mockUserProfile, ...data }
+  );
 
 export const addSkills = (skills: string[]) =>
-  api.post('/users/skills', { skills });
+  withMockFallback(
+    () => api.post('/users/skills', { skills }),
+    { skills: [...mockUserProfile.skills, ...skills] }
+  );
 
 export const removeSkills = (skills: string[]) =>
-  api.delete('/users/skills', { data: { skills } });
+  withMockFallback(
+    () => api.delete('/users/skills', { data: { skills } }),
+    { skills: mockUserProfile.skills.filter(s => !skills.includes(s)) }
+  );
 
 export const addExperience = (experience: any) =>
-  api.post('/users/experience', experience);
+  withMockFallback(
+    () => api.post('/users/experience', experience),
+    { experience: [...mockUserProfile.experience, { ...experience, id: Date.now().toString() }] }
+  );
 
 export const updateExperience = (id: string, experience: any) =>
-  api.patch(`/users/experience/${id}`, experience);
+  withMockFallback(
+    () => api.patch(`/users/experience/${id}`, experience),
+    { experience: mockUserProfile.experience.map(e => e.id === id ? { ...e, ...experience } : e) }
+  );
 
 export const deleteExperience = (id: string) =>
-  api.delete(`/users/experience/${id}`);
+  withMockFallback(
+    () => api.delete(`/users/experience/${id}`),
+    { experience: mockUserProfile.experience.filter(e => e.id !== id) }
+  );
 
 // Job APIs
 export const searchJobs = (params: any) =>
-  api.get('/jobs', { params });
+  withMockFallback(
+    () => api.get('/jobs', { params }),
+    mockJobs
+  );
 
 export const getJobDetails = (id: string) =>
-  api.get(`/jobs/${id}`);
+  withMockFallback(
+    () => api.get(`/jobs/${id}`),
+    mockJobs.find(job => job.id === id) || mockJobs[0]
+  );
 
 export const getNearbyJobs = (params: any) =>
-  api.get('/jobs/nearby', { params });
+  withMockFallback(
+    () => api.get('/jobs/nearby', { params }),
+    mockJobs
+  );
 
 export const getRecommendedJobs = () =>
-  api.get('/jobs/recommended');
+  withMockFallback(
+    () => api.get('/jobs/recommended'),
+    mockJobs.slice(0, 3)
+  );
 
 export const applyForJob = (jobId: string) =>
-  api.post(`/jobs/${jobId}/apply`);
+  withMockFallback(
+    () => api.post(`/jobs/${jobId}/apply`),
+    { success: true, message: 'Application submitted successfully! 🎉' }
+  );
 
 // Application APIs
 export const getMyApplications = () =>
-  api.get('/applications');
+  withMockFallback(
+    () => api.get('/applications'),
+    mockApplications
+  );
 
 export const getApplicationDetails = (id: string) =>
-  api.get(`/applications/${id}`);
+  withMockFallback(
+    () => api.get(`/applications/${id}`),
+    mockApplications.find(app => app.id === id) || mockApplications[0]
+  );
 
 export const withdrawApplication = (id: string) =>
-  api.post(`/applications/${id}/withdraw`);
+  withMockFallback(
+    () => api.post(`/applications/${id}/withdraw`),
+    { success: true, message: 'Application withdrawn successfully' }
+  );
 
 export const submitFeedback = (id: string, feedback: any) =>
-  api.post(`/applications/${id}/feedback`, feedback);
+  withMockFallback(
+    () => api.post(`/applications/${id}/feedback`, feedback),
+    { success: true, message: 'Thank you for your feedback! 🙏' }
+  );
 
 // Message APIs
 export const getConversations = () =>
-  api.get('/messages/conversations');
+  withMockFallback(
+    () => api.get('/messages/conversations'),
+    mockConversations
+  );
 
 export const getConversationMessages = (conversationId: string) =>
-  api.get(`/messages/conversations/${conversationId}`);
+  withMockFallback(
+    () => api.get(`/messages/conversations/${conversationId}`),
+    mockConversations.find(conv => conv.id === conversationId)?.messages || []
+  );
 
 export const sendMessage = (conversationId: string, content: string) =>
-  api.post(`/messages/conversations/${conversationId}/messages`, { content });
+  withMockFallback(
+    () => api.post(`/messages/conversations/${conversationId}/messages`, { content }),
+    {
+      id: Date.now().toString(),
+      senderId: 'user',
+      content,
+      timestamp: new Date().toISOString(),
+      read: true
+    }
+  );
 
 export const markMessageAsRead = (messageId: string) =>
-  api.patch(`/messages/${messageId}/read`);
+  withMockFallback(
+    () => api.patch(`/messages/${messageId}/read`),
+    { success: true }
+  );

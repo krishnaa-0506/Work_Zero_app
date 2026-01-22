@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { VoiceToggle } from "@/components/ui/voice-toggle";
-import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
+import { TTSControls } from "@/components/TTSControls";
+import { usePageNarration } from "@/hooks/usePageNarration";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const NARRATION_STORAGE_KEY = "zeroBarrierVoiceEnabled";
@@ -11,56 +12,56 @@ const getNarrationForPath = (path: string, t: ReturnType<typeof useLanguage>["t"
   const narrations: { match: (p: string) => boolean; text: string }[] = [
     { 
       match: (p: string) => p === "/home", 
-      text: `${t.appName}. ${t.nearbyJobs}. ${t.voiceSupport}. ${t.applyNow} to explore opportunities.`
+      text: `🏠 ${t.appName}. 🚀 ${t.nearbyJobs}. 🎤 ${t.voiceSupport}. ✨ ${t.applyNow} to explore opportunities.`
     },
     { 
       match: (p: string) => p === "/messages", 
-      text: `${t.navMessages}. ${t.messages}. Chat with employers and workers directly.`
+      text: `💬 ${t.navMessages}. 📱 ${t.messages}. Chat with employers and workers directly.`
     },
     { 
       match: (p: string) => p === "/skills", 
-      text: `${t.navSkills}. ${t.skillsAndExperience}. Track your professional skills and badges.`
+      text: `🏆 ${t.navSkills}. 💪 ${t.skillsAndExperience}. Track your professional skills and badges.`
     },
     { 
       match: (p: string) => p === "/support", 
-      text: `${t.helpAndSupport}. ${t.weAreHere}. Get assistance through chat or call support.`
+      text: `🆘 ${t.helpAndSupport}. 👋 ${t.weAreHere}. Get assistance through chat or call support.`
     },
     { 
       match: (p: string) => p === "/settings", 
-      text: `${t.navSettings}. Customize your preferences and language settings.`
+      text: `⚙️ ${t.navSettings}. 🔧 Customize your preferences and language settings.`
     },
     { 
       match: (p: string) => p === "/notifications", 
-      text: `${t.notifications}. Check your application updates, interviews, and job matches.`
+      text: `🔔 ${t.notifications}. 📋 Check your application updates, interviews, and job matches.`
     },
     { 
       match: (p: string) => p === "/profile", 
-      text: `${t.profile}. ${t.profileSettings}. View your verified profile and earned badges.`
+      text: `👤 ${t.profile}. ✅ ${t.profileSettings}. View your verified profile and earned badges.`
     },
     { 
       match: (p: string) => p.startsWith("/job"), 
-      text: `${t.jobDetails}. Browse opportunities and ${t.applyNow}.`
+      text: `💼 ${t.jobDetails}. 🔍 Browse opportunities and ${t.applyNow}.`
     },
     { 
       match: (p: string) => p === "/applications", 
-      text: `${t.myApplications}. ${t.trackApplications}. Check your application statuses.`
+      text: `📊 ${t.myApplications}. 📈 ${t.trackApplications}. Check your application statuses.`
     },
     { 
       match: (p: string) => p.startsWith("/application-status"), 
-      text: `${t.applicationStatus}. Follow your application through each stage.`
+      text: `📋 ${t.applicationStatus}. 👀 Follow your application through each stage.`
     },
     { 
       match: (p: string) => p === "/payment", 
-      text: `${t.paymentHistory}. Manage your earnings and withdraw money.`
+      text: `💰 ${t.paymentHistory}. 💳 Manage your earnings and withdraw money.`
     },
     { 
       match: (p: string) => p.startsWith("/verification"), 
-      text: `${t.verifyIdentity}. Complete your profile verification.`
+      text: `✅ ${t.verifyIdentity}. 🔐 Complete your profile verification.`
     },
   ];
 
   const entry = narrations.find((e) => e.match(path));
-  return entry ? entry.text : `${t.appName}. ${t.voiceSupport}.`;
+  return entry ? entry.text : `📱 ${t.appName}. 🎤 ${t.voiceSupport}.`;
 };
 
 const getTitleForPath = (path: string, t: ReturnType<typeof useLanguage>["t"]) => {
@@ -79,7 +80,10 @@ const getTitleForPath = (path: string, t: ReturnType<typeof useLanguage>["t"]) =
 export const MainLayout = () => {
   const location = useLocation();
   const { t } = useLanguage();
-  const { speak, stopSpeaking, isSupported } = useVoiceAssistant();
+  const { readPageContent, stop, isSupported } = usePageNarration({
+    enabled: true,
+    autoRead: false
+  });
   const [voiceEnabled, setVoiceEnabled] = useState<boolean>(() => {
     const stored = localStorage.getItem(NARRATION_STORAGE_KEY);
     return stored ? stored === "true" : true;
@@ -97,22 +101,24 @@ export const MainLayout = () => {
     if (!voiceEnabled || !isSupported) return;
 
     const narration = getNarrationForPath(location.pathname, t);
+    const pageTitle = getTitleForPath(location.pathname, t);
+    
     const timeout = setTimeout(() => {
-      stopSpeaking();
-      speak(narration, { rate: 0.9 });
+      stop();
+      readPageContent(pageTitle, narration);
     }, 250);
 
     return () => {
       clearTimeout(timeout);
-      stopSpeaking();
+      stop();
     };
-  }, [location.pathname, speak, stopSpeaking, t, voiceEnabled, isSupported]);
+  }, [location.pathname, readPageContent, stop, t, voiceEnabled, isSupported]);
 
   const handleToggleVoice = () => {
     setVoiceEnabled((prev) => {
       const next = !prev;
       if (!next) {
-        stopSpeaking();
+        stop();
       }
       return next;
     });
@@ -120,7 +126,15 @@ export const MainLayout = () => {
 
   return (
     <div className="min-h-screen pb-24 bg-background">
-      <Outlet />
+      {/* TTS Controls - Fixed position for accessibility */}
+      <div className="fixed top-4 right-4 z-50">
+        <TTSControls />
+      </div>
+      
+      <main>
+        <Outlet />
+      </main>
+      
       <VoiceToggle enabled={voiceEnabled} onToggle={handleToggleVoice} isSupported={isSupported} />
       <BottomNav />
     </div>

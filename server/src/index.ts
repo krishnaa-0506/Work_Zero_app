@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { PORT, MONGODB_URI, CORS_ORIGIN } from './config';
+import { PORT, MONGODB_URI, ALLOWED_ORIGINS } from './config';
 import { errorHandler } from './middleware/auth';
 import userRoutes from './routes/users';
 import jobRoutes from './routes/jobs';
@@ -15,15 +15,21 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: CORS_ORIGIN,
-    methods: ['GET', 'POST']
+    origin: ALLOWED_ORIGINS,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
   }
 });
 
 // Middleware
-app.use(cors({ origin: CORS_ORIGIN }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({ 
+  origin: ALLOWED_ORIGINS,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use('/api/users', userRoutes);

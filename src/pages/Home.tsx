@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useVoiceAssistant } from '@/hooks/useVoiceAssistant';
+import { usePageNarration } from '@/hooks/usePageNarration';
 import { Job } from '@/types/job';
 import { useJobSocket } from '@/hooks/useJobSocket';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ const Home = () => {
   const [isFullTime, setIsFullTime] = useState(true);
   const [isGovtOnly, setIsGovtOnly] = useState(false);
   
-  const { speak, isSupported } = useVoiceAssistant();
+  const { speak, isSupported } = usePageNarration();
 
   useEffect(() => {
     // Get user's location and search for nearby jobs
@@ -85,7 +85,7 @@ const Home = () => {
 
   const handleJobApply = (job: Job) => {
     if (isSupported) {
-      speak(`Applying for ${job.title} at ${job.company}`, { rate: 0.9 });
+      speak(`✨ Applying for ${job.title} at ${job.company}. Please wait while we process your application.`);
     }
     
     navigate('/application-sent', { 
@@ -99,13 +99,15 @@ const Home = () => {
   const readJobDetails = (job: Job) => {
     if (isSupported) {
       const details = `
-        ${job.title} at ${job.company}. 
-        Salary: ${formatSalary(job)}. 
-        Location: ${job.distance} kilometers away. 
-        Working hours: ${job.workingHours}. 
-        Description: ${job.description}
+        📱 WorkZero App Job Details: 
+        🎯 Position: ${job.title} at ${job.company}. 
+        💰 Salary: ${formatSalary(job)}. 
+        📍 Location: ${job.distance} kilometers away from you. 
+        ⏰ Working hours: ${job.workingHours}. 
+        📝 Job Description: ${job.description}
+        ✨ Tap Apply Now to submit your application.
       `;
-      speak(details, { rate: 0.8 });
+      speak(details);
     }
   };
 
@@ -127,17 +129,20 @@ const Home = () => {
       />
 
       {/* Job Categories */}
-      <div className="p-4 grid grid-cols-2 gap-4">
-        <JobCategoryCard
-          type="construction"
-          onSelect={setSelectedCategory}
-          isSelected={selectedCategory === 'construction'}
-        />
-        <JobCategoryCard
-          type="logistics"
-          onSelect={setSelectedCategory}
-          isSelected={selectedCategory === 'logistics'}
-        />
+      <div className="p-4">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">🔍 Browse Job Categories</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <JobCategoryCard
+            type="construction"
+            onSelect={setSelectedCategory}
+            isSelected={selectedCategory === 'construction'}
+          />
+          <JobCategoryCard
+            type="logistics"
+            onSelect={setSelectedCategory}
+            isSelected={selectedCategory === 'logistics'}
+          />
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -146,19 +151,19 @@ const Home = () => {
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="space-x-2">
               <Sliders className="w-4 h-4" />
-              <span>Filters</span>
+              <span>🔧 Filters</span>
             </Button>
           </SheetTrigger>
           <SheetContent>
             <SheetHeader>
-              <SheetTitle>Job Filters</SheetTitle>
+              <SheetTitle>🎯 Job Filters</SheetTitle>
               <SheetDescription>
-                Adjust these settings to find your perfect job match
+                ✨ Adjust these settings to find your perfect job match
               </SheetDescription>
             </SheetHeader>
             <div className="py-4 space-y-6">
               <div className="space-y-2">
-                <Label>Distance (km)</Label>
+                <Label>📍 Distance (km)</Label>
                 <Slider
                   value={distance}
                   onValueChange={setDistance}
@@ -166,13 +171,13 @@ const Home = () => {
                   step={1}
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>0 km</span>
-                  <span>{distance[0]} km</span>
+                  <span>📍 0 km</span>
+                  <span>🎯 {distance[0]} km</span>
                 </div>
               </div>
               
               <div className="flex items-center justify-between">
-                <Label>Full-time only</Label>
+                <Label>⏰ Full-time only</Label>
                 <Switch
                   checked={isFullTime}
                   onCheckedChange={setIsFullTime}
@@ -204,6 +209,7 @@ const Home = () => {
 
       {/* Job Feed */}
       <div className="p-4 pb-20 space-y-4">
+        <h2 className="text-lg font-semibold mb-4 text-gray-800">💼 Available Jobs Near You</h2>
         {filteredJobs.map((job) => (
           <Card 
             key={job.id} 
@@ -213,14 +219,14 @@ const Home = () => {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-lg mb-1">
-                    {job.title}
+                    🎯 {job.title}
                   </h3>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">{job.company}</span>
+                    <span className="text-sm text-muted-foreground">🏢 {job.company}</span>
                     {job.isVerified && (
                       <Badge variant="secondary" className="bg-success/10 text-success text-xs">
                         <CheckCircle className="w-3 h-3 mr-1" />
-                        {t.companyVerified}
+                        ✅ {t.companyVerified}
                       </Badge>
                     )}
                   </div>
@@ -230,6 +236,7 @@ const Home = () => {
                   size="icon"
                   onClick={() => readJobDetails(job)}
                   className="text-muted-foreground"
+                  title="🔊 Listen to job details"
                 >
                   <Volume2 className="w-5 h-5" />
                 </Button>
@@ -237,16 +244,16 @@ const Home = () => {
 
               <div className="flex items-center justify-between mb-3">
                 <div className="text-2xl font-bold text-primary">
-                  {formatSalary(job)}
+                  💰 {formatSalary(job)}
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
                     <MapPin className="w-4 h-4" />
-                    <span>{job.distance} {t.kmAway}</span>
+                    <span>📍 {job.distance} {t.kmAway}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Clock className="w-4 h-4" />
-                    <span>{job.workingHours}</span>
+                    <span>⏰ {job.workingHours}</span>
                   </div>
                 </div>
               </div>
@@ -255,7 +262,7 @@ const Home = () => {
                 onClick={() => handleJobApply(job)}
                 className="w-full bg-accent hover:bg-accent-hover"
               >
-                {t.applyNow}
+                ✨ {t.applyNow}
               </Button>
             </CardContent>
           </Card>
@@ -264,9 +271,9 @@ const Home = () => {
         {filteredJobs.length === 0 && (
           <Card className="p-8 text-center">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-semibold mb-2">No jobs found</h3>
+            <h3 className="text-lg font-semibold mb-2">😊 No jobs found</h3>
             <p className="text-muted-foreground mb-4">
-              Try adjusting your filters or check back later for new opportunities.
+              🎯 Try adjusting your filters or check back later for new opportunities.
             </p>
             <Button
               variant="outline"
@@ -277,7 +284,7 @@ const Home = () => {
                 setIsGovtOnly(false);
               }}
             >
-              Reset Filters
+              🔄 Reset Filters
             </Button>
           </Card>
         )}
