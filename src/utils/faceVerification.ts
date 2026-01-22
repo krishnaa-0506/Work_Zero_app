@@ -560,33 +560,29 @@ const generateHistogram = (): number[] => {
 // Real Aadhaar verification using UIDAI APIs
 export const verifyAadhaarWithUIDAI = async (aadhaarNumber: string): Promise<AadhaarVerificationResult> => {
   try {
-    // In production, integrate with UIDAI's eKYC services
-    // This requires proper authorization and API keys
-    
+    // Demo mode: Always succeed with valid format
     const cleanAadhaar = aadhaarNumber.replace(/\s/g, '');
     
-    if (!validateAadhaarNumber(cleanAadhaar)) {
+    if (!/^\d{12}$/.test(cleanAadhaar)) {
       return {
         success: false,
-        error: 'Invalid Aadhaar number format'
+        error: '🔢 Please enter exactly 12 digits'
       };
     }
     
-    // Simulate UIDAI API call
-    // Real implementation would call:
-    // - UIDAI eKYC services
-    // - Aadhaar verification APIs
-    // - DigiLocker integration
+    // Simulate UIDAI API delay
+    await new Promise(resolve => setTimeout(resolve, 2000)); 
     
-    await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate API delay
+    // Generate demo data based on Aadhaar number
+    const names = ['John Doe', 'Jane Smith', 'Raj Kumar', 'Priya Sharma', 'Alex Johnson'];
+    const name = names[parseInt(cleanAadhaar.charAt(0)) % names.length];
     
-    // Simulate successful verification
     const mockData = {
-      name: 'John Doe',
-      gender: 'M',
-      dateOfBirth: '01-01-1990',
-      address: 'Sample Address, City, State - 123456',
-      photo: '/placeholder.svg', // Base64 photo from UIDAI
+      name: name,
+      gender: parseInt(cleanAadhaar.charAt(1)) % 2 === 0 ? 'M' : 'F',
+      dateOfBirth: `${1980 + (parseInt(cleanAadhaar.charAt(2)) % 25)}-${(parseInt(cleanAadhaar.charAt(3)) % 12) + 1}-${(parseInt(cleanAadhaar.charAt(4)) % 28) + 1}`,
+      address: 'Demo Address, City, State - ' + cleanAadhaar.slice(-6),
+      photo: '/placeholder.svg',
       verified: true
     };
     
@@ -598,7 +594,7 @@ export const verifyAadhaarWithUIDAI = async (aadhaarNumber: string): Promise<Aad
   } catch (error) {
     return {
       success: false,
-      error: 'Aadhaar verification failed. Please try again.'
+      error: '🔄 Please try again'
     };
   }
 };
@@ -607,17 +603,35 @@ export const sendOTP = async (aadhaarNumber: string): Promise<OTPResult> => {
   try {
     const cleanAadhaar = aadhaarNumber.replace(/\s/g, '');
     
-    if (!validateAadhaarNumber(cleanAadhaar)) {
+    if (!/^\d{12}$/.test(cleanAadhaar)) {
       return {
         success: false,
         txnId: '',
-        message: 'Invalid Aadhaar number'
+        message: '🔢 Please enter exactly 12 digits'
       };
     }
     
-    // Real implementation would integrate with:
-    // - UIDAI OTP services
-    // - SMS gateway providers
+    // Simulate OTP sending delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // For demo: always generate a 6-digit OTP
+    const demoOTP = '123456'; // Fixed OTP for demo
+    
+    return {
+      success: true,
+      txnId: 'demo-txn-' + Date.now(),
+      message: '✅ OTP sent successfully!',
+      otp: demoOTP // Include OTP in response for demo
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      txnId: '',
+      message: '🔄 Failed to send OTP'
+    };
+  }
+};
     // - Telecom APIs for OTP delivery
     
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -644,11 +658,14 @@ export const sendOTP = async (aadhaarNumber: string): Promise<OTPResult> => {
 
 export const verifyOTP = async (enteredOTP: string, txnId: string): Promise<boolean> => {
   try {
-    // Real implementation would verify with UIDAI servers
+    // Simulate verification delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // For demo, accept any 6-digit OTP
-    return enteredOTP.length === 6 && /^\d{6}$/.test(enteredOTP);
+    // For demo: accept common OTPs or any 6-digit number
+    const validOTPs = ['123456', '000000', '111111', '999999'];
+    const isValidFormat = /^\d{6}$/.test(enteredOTP);
+    
+    return isValidFormat && (validOTPs.includes(enteredOTP) || enteredOTP === '123456');
     
   } catch (error) {
     return false;
@@ -658,13 +675,9 @@ export const verifyOTP = async (enteredOTP: string, txnId: string): Promise<bool
 export const validateAadhaarNumber = (aadhaarNumber: string): boolean => {
   const cleanNumber = aadhaarNumber.replace(/\s/g, '');
   
-  // Basic format check
-  if (!/^\d{12}$/.test(cleanNumber)) {
-    return false;
-  }
-  
-  // Verhoeff algorithm for Aadhaar checksum validation
-  return verifyAadhaarChecksum(cleanNumber);
+  // For demo purposes: just check if it's 12 digits
+  // Real implementation would use Verhoeff algorithm
+  return /^\d{12}$/.test(cleanNumber);
 };
 
 const verifyAadhaarChecksum = (aadhaar: string): boolean => {

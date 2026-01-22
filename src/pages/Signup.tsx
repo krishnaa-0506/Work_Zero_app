@@ -78,10 +78,11 @@ const Signup = () => {
   };
 
   const handleAadhaarVerify = async () => {
-    if (!validateAadhaarNumber(formData.aadhaarNumber)) {
-      toast.error("Please enter a valid 12-digit Aadhaar number");
+    const cleanNumber = formData.aadhaarNumber.replace(/\s/g, '');
+    if (cleanNumber.length !== 12 || !/^\d{12}$/.test(cleanNumber)) {
+      toast.error("🔢 Please enter exactly 12 digits for Aadhaar number");
       if (isSupported) {
-        speak("Please enter a valid 12-digit Aadhaar number");
+        speak("Please enter exactly 12 digits for Aadhaar number");
       }
       return;
     }
@@ -273,7 +274,7 @@ const Signup = () => {
                     <Button
                       className="w-full"
                       onClick={handleAadhaarVerify}
-                      disabled={loading || !validateAadhaarNumber(formData.aadhaarNumber)}
+                      disabled={loading || formData.aadhaarNumber.replace(/\s/g, '').length !== 12}
                     >
                       {loading ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />

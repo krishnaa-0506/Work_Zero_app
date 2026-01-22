@@ -54,8 +54,9 @@ const AadhaarVerification = ({ onVerificationComplete, language }: AadhaarVerifi
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAadhaarSubmit = async () => {
-    if (!validateAadhaarNumber(verificationData.aadhaarNumber)) {
-      toast.error('Please enter a valid 12-digit Aadhaar number');
+    const cleanNumber = verificationData.aadhaarNumber.replace(/\s/g, '');
+    if (cleanNumber.length !== 12 || !/^\d{12}$/.test(cleanNumber)) {
+      toast.error('🔢 Please enter exactly 12 digits for your Aadhaar number');
       return;
     }
 
@@ -263,7 +264,7 @@ const AadhaarVerification = ({ onVerificationComplete, language }: AadhaarVerifi
 
               <Button
                 onClick={handleAadhaarSubmit}
-                disabled={loading || !verificationData.aadhaarNumber}
+                disabled={loading || verificationData.aadhaarNumber.replace(/\s/g, '').length !== 12}
                 className="w-full h-12 text-base"
                 size="lg"
               >
@@ -318,8 +319,13 @@ const AadhaarVerification = ({ onVerificationComplete, language }: AadhaarVerifi
 
               <div className="space-y-4">
                 <Label className="text-base font-medium text-center block">
-                  Enter 6-digit OTP
+                  📱 Enter 6-digit OTP
                 </Label>
+                <div className="text-center mb-3">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    💡 Demo: Use OTP "123456"
+                  </Badge>
+                </div>
                 <div className="flex justify-center">
                   <InputOTP
                     value={verificationData.otp}

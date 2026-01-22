@@ -8,12 +8,13 @@ import User, { IUser } from '../models/User';
 export const verifyAadhaar = async (req: Request, res: Response) => {
   try {
     const { aadhaarNumber } = req.body;
-    // In production, integrate with actual UIDAI API
-    // For demo, we'll simulate verification
-    const isValid = aadhaarNumber.length === 12;
+    const cleanNumber = aadhaarNumber.replace(/\s/g, '');
+    
+    // For demo purposes: accept any 12-digit number
+    const isValid = /^\d{12}$/.test(cleanNumber);
     
     if (!isValid) {
-      return res.status(400).json({ message: 'Invalid Aadhaar number' });
+      return res.status(400).json({ message: '🚫 Please enter exactly 12 digits for Aadhaar number' });
     }
 
     res.json({
