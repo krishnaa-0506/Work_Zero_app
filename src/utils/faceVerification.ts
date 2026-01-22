@@ -632,29 +632,6 @@ export const sendOTP = async (aadhaarNumber: string): Promise<OTPResult> => {
     };
   }
 };
-    // - Telecom APIs for OTP delivery
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const txnId = generateTransactionId();
-    const otp = generateSecureOTP();
-    
-    // In demo mode, return OTP
-    return {
-      success: true,
-      txnId,
-      message: 'OTP sent successfully',
-      otp // Only for demo - remove in production
-    };
-    
-  } catch (error) {
-    return {
-      success: false,
-      txnId: '',
-      message: 'Failed to send OTP'
-    };
-  }
-};
 
 export const verifyOTP = async (enteredOTP: string, txnId: string): Promise<boolean> => {
   try {
